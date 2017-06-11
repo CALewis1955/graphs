@@ -25,6 +25,9 @@ class MapNode implements Comparable<MapNode>
 	/** the distance from the start node */
 	private double distanceFromStart;
 	
+	/** the trip duration from the start node */
+	private double tripDurationFromStart;
+	
 	/** the priority function to be used for comparable */
 	private double priorityFunction;
 	 
@@ -92,6 +95,21 @@ class MapNode implements Comparable<MapNode>
 	 * @param distance The distance from the start node
 	 */
 	
+	void setTripDurationFromStart(double distance)
+	{
+		this.tripDurationFromStart = distance;
+	}
+	
+	double getTripDurationFromStart() 
+	{
+		return this.tripDurationFromStart;
+	}
+	
+	/** set the distance from the start node
+	 * 
+	 * @param distance The distance from the start node
+	 */
+	
 	void setDistanceFromStart(double distance)
 	{
 		this.distanceFromStart = distance;
@@ -109,6 +127,8 @@ class MapNode implements Comparable<MapNode>
 		return this.location.distance(goal.getLocation());
 	}
 	
+	
+	
 	double getEdgeLength(MapNode n) 
 	{
 		double length = 0;
@@ -118,6 +138,17 @@ class MapNode implements Comparable<MapNode>
 			}
 		}
 		return length;
+	}
+	
+	double getTripDurationToNextNode(MapNode n) 
+	{
+		double duration = 0;
+		for (MapEdge edge : edges) {
+			if (edge.getEndPoint() == n.getLocation()) {
+				duration = edge.getDuration();
+			}
+		}
+		return duration;
 	}
 	
 	/** Returns whether two nodes are equal.

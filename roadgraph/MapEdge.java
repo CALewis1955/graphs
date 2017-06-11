@@ -25,11 +25,29 @@ class MapEdge
 	private MapNode start;
 	private MapNode end;
 	
-	
 	/** The length of the road segment, in km */
 	private double length;
 	
+	/** The duration of a trip on the road segment, to be determined by the roadType and length */
+	private double duration;
+	
+	/** speed over different road segments */
+	/** conversion of km to miles */
+	private static final double kmToMiles = 1.60934; 
+	
+	
+	/** constants to represent speed over various road types */
+	static final double PRIMARY_ROAD_SPEED = 70 * kmToMiles;
+	static final double SECONDARY_ROAD_SPEED = 50 * kmToMiles;
+	static final double TERTIARY_ROAD_SPEED = 40 * kmToMiles;
+	static final double RESIDENTIAL_ROAD_SPEED = 25 * kmToMiles;
+	static final double LIVING_STREET_ROAD_SPEED = 15 * kmToMiles;
+	
+	
+	
+	
 	static final double DEFAULT_LENGTH = 0.01;
+	
 	
 	
 	/** Create a new MapEdge object
@@ -72,6 +90,7 @@ class MapEdge
 		end = n2;
 		this.roadType = roadType;
 		this.length = length;
+		setDuration();
 	}
 	
 	/**
@@ -121,6 +140,26 @@ class MapEdge
 	public String getRoadType() {
 		return roadType;
 	}
+	
+	public void setDuration() {
+		switch (roadType) {
+			case "primary": duration = length/PRIMARY_ROAD_SPEED;
+			break;
+			case "secondary": duration = length/SECONDARY_ROAD_SPEED;
+			break;
+			case "teriary": duration = length/TERTIARY_ROAD_SPEED;
+			break;
+			case "residential": duration = length/RESIDENTIAL_ROAD_SPEED;
+			break;
+			case "living_street": duration = length/LIVING_STREET_ROAD_SPEED;
+			break;
+			default: duration = length/TERTIARY_ROAD_SPEED;
+		}
+	}
+	
+	public double getDuration() {
+		return duration;
+	}
 
 	/**
 	 * Given one of the nodes involved in this edge, get the other one
@@ -147,7 +186,8 @@ class MapEdge
 		toReturn += "\n\t" + start.getLocation();
 		toReturn += "\n\t" + end.getLocation();
 		toReturn += "\nRoad name: " + roadName + " Road type: " + roadType +
-				" Segment length: " + String.format("%.3g", length) + "km";
+				" Segment length: " + String.format("%.3g", length) + "km" + "\t" +
+				"Duration: " + duration;
 		
 		return toReturn;
 	}

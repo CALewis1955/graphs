@@ -8,12 +8,14 @@
 package roadgraph;
 
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -433,7 +435,7 @@ public class MapGraph {
  						double distanceFromGoal = neighbor.getDistanceFromGoal(endNode);
  						double totalDistance = distanceFromGoal + distanceFromStart;
  						for (MapEdge edge: neighbor.getEdges()){
- 							System.out.println(edge.getRoadType());
+ 							System.out.println(edge);
  						}
 // 						System.out.println("This is the current node:  " + curr);
 // 						System.out.println("This is the neighbor:  " + neighbor);
@@ -458,6 +460,99 @@ public class MapGraph {
 		}
 		return found;
 	}
+	
+	
+	/** Find the path from start to goal using Dijkstra's algorithm
+	 * 
+	 * @param start The starting location
+	 * @param goal The goal location
+	 * @param nodeSearched A hook for visualization.  See assignment instructions for how to use it.
+	 * @return The list of intersections that form the shortest path from 
+	 *   start to goal (including both start and goal).
+	 */
+	public List<GeographicPoint> searchByTripDuration(GeographicPoint start, 
+										  GeographicPoint goal, Consumer<GeographicPoint> nodeSearched)
+	{
+		// TODO: Implement this method in WEEK 3
+
+		// Hook for visualization.  See writeup.
+		//nodeSearched.accept(next.getLocation());
+		
+		if (start == null || goal == null)
+			throw new NullPointerException("Cannot find route from or to null node");
+		MapNode startNode = pointNodeMap.get(start);
+		MapNode endNode = pointNodeMap.get(goal);
+		if (startNode == null) {
+			System.err.println("Start node " + start + " does not exist");
+			return null;
+		}
+		if (endNode == null) {
+			System.err.println("End node " + goal + " does not exist");
+			return null;
+		}
+
+		HashMap<MapNode, MapNode> parentMap = new HashMap<MapNode, MapNode>();
+		boolean found = tripDurationSearch(startNode, endNode, parentMap, nodeSearched);
+		
+		if (found) {
+			return reconstructPath(parentMap, startNode, endNode);
+		}
+		
+		return null;
+	}
+	
+	/** helper method for DjikstraSearch
+	 * @param startNode  The starting node for the search
+	 * @param endNode  The goal node
+	 * @param parentMap The hashmap that will contain the intersections forming the path
+	 * @return true if path is found
+	 */
+	
+	private boolean tripDurationSearch(MapNode startNode, MapNode endNode, 
+			HashMap<MapNode, MapNode> parentMap,
+			Consumer<GeographicPoint> nodeSearched) {
+		boolean found = false;
+		PriorityQueue<MapNode> q = new PriorityQueue<MapNode>();
+		Set<MapNode> visited = new HashSet<MapNode>();
+		for (MapNode n: pointNodeMap.values()) {
+			n.setDistanceFromStart(Double.MAX_VALUE);
+		}
+		startNode.setDistanceFromStart(0);
+		q.add(startNode);
+		int visitedCount = 0;
+		
+		while(!q.isEmpty()) {
+			MapNode curr = q.poll();
+			if (!visited.contains(curr)) {
+				visited.add(curr);
+				nodeSearched.accept(curr.getLocation());
+				visitedCount += 1;
+				if (curr == endNode) {
+					found = true; 
+					System.out.println("This is the number of nodes visited"
+							+ "by Dijkstra: " + visitedCount);
+					return found;
+				}
+ 				for (MapNode neighbor: curr.getNeighbors()) {
+ 					if (!visited.contains(neighbor)){
+ 						double duration = curr.getTripDurationFromStart() + curr.getTripDurationToNextNode(neighbor);
+ 						if (duration < neighbor.getTripDurationFromStart()) {
+ 							neighbor.setTripDurationFromStart(curr.getTripDurationFromStart() + curr.getTripDurationToNextNode(neighbor));
+ 							neighbor.setPriorityFunction(neighbor.getTripDurationFromStart());
+ 							parentMap.put(neighbor, curr);
+ 							q.add(neighbor);
+ 						}
+ 					}
+ 				}
+			}
+		}
+		
+		return found;
+	}
+	
+
+	
+	
 	
 	
 	
